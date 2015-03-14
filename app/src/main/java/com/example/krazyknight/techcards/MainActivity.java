@@ -1,6 +1,6 @@
 package com.example.krazyknight.techcards;
 
-        import android.app.ProgressDialog;
+        import android.content.Context;
         import android.os.AsyncTask;
         import android.support.v7.app.ActionBarActivity;
         import android.os.Bundle;
@@ -9,9 +9,11 @@ package com.example.krazyknight.techcards;
         import android.view.Menu;
         import android.view.MenuItem;
         import android.view.View;
+        import android.view.ViewGroup;
         import android.widget.AdapterView;
         import android.widget.AdapterView.OnItemClickListener;
         import android.widget.ArrayAdapter;
+        import android.widget.ImageView;
         import android.widget.ListView;
         import android.widget.TextView;
         import android.widget.Toast;
@@ -26,31 +28,109 @@ package com.example.krazyknight.techcards;
 
 public class MainActivity extends ActionBarActivity implements OnItemClickListener {
     ListView listView1;
-    String[] data = {"sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday","monday","tuesday",
-            "wednesday","thursday","friday","saturday","sunday","monday","tuesday","wednesday","thursday","friday","saturday"};
-    ArrayAdapter<String> adapter ;
-    ArrayList<String> summery;
-    ArrayList<String> links;
+    int[] images = {R.drawable.img1,R.drawable.img2,R.drawable.img3,R.drawable.img4,R.drawable.img5,R.drawable.img6, R.drawable.img7,R.drawable.img8};
+    MyAdapter adapter ;
+
+    ArrayList<String> summery = new ArrayList<String>(4);
+    ArrayList<String> links = new ArrayList<String>(4);
+    Elements art;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        LayoutInflater inflater = getLayoutInflater();
-        View v = inflater.inflate(R.layout.single_row,listView1,false);
-
-        Fetch fetch = new Fetch();
-        fetch.execute();
-
         listView1 = (ListView) findViewById(R.id.listView1);
-        adapter = new ArrayAdapter<String>(this,R.layout.single_row,R.id.textView2,data);
-        listView1.setAdapter(adapter);
-        listView1.setOnItemClickListener(this);
+
+        String stringUrl = "https://techcards.wordpress.com";
+        Fetch fetch = new Fetch();
+        fetch.execute(stringUrl);
+    }
+
+
+    // Fetch AsyncTask
+    private class Fetch extends AsyncTask<String, Void, Elements> {
+
+        @Override
+        protected Elements doInBackground(String... params) {
+            Elements articles = null;
+
+            try {
+                // Connect to the web site
+                Document doc = Jsoup.connect(params[0]).get();
+                Element main =doc.getElementById("content").getElementById("primary").
+                        getElementById("main");
+                articles = main.getElementsByClass("entry-summary");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("IO exception");
+            }
+
+            return articles;
+        }
+
+
+
+        protected void onPostExecute(Elements result) {
+
+            art = result;
+
+            try{
+                for (int i =0;i<art.size() ;i++ ) {
+
+                    Log.v("articles after post executive",art.get(i).toString());
+                    links.add(i,art.get(i).getElementsByTag("a").toString());
+                    Log.v("links",art.toString());
+                    summery.add(i,art.get(i).getElementsByTag("p").text());
+
+                }
+
+            }catch(NullPointerException e){
+                e.printStackTrace();
+                System.out.println("art is null");
+            }
+
+
+            adapter = new MyAdapter(MainActivity.this,links,summery,images);
+            listView1.setAdapter(adapter);
+            listView1.setOnItemClickListener(MainActivity.this);
+
+
+        }
 
     }
 
+    public class MyAdapter extends ArrayAdapter<String>{
+
+        int[] images;
+        ArrayList<String>  links;
+        ArrayList<String> summery;
+
+        public MyAdapter(Context c,ArrayList<String>  links,ArrayList<String>  summery,int[]images){
+            super(c,R.layout.single_row,R.id.textView1,links);
+            this.images = images;
+            this.links = links;
+            this.summery = summery;
+        }
+        public View getView(int position,View convertView,ViewGroup parent){
+
+            LayoutInflater inflater = getLayoutInflater();
+            View v = inflater.inflate(R.layout.single_row,listView1,false);
+
+            TextView t1 = (TextView) v.findViewById(R.id.textView1);
+            TextView t2 = (TextView) v.findViewById(R.id.textView2);
+            ImageView v1 = (ImageView) v.findViewById(R.id.imageView1);
+            t1.setText(links.get(position));
+            t2.setText(summery.get(position));
+
+            v1.setImageResource(images[position]);
+
+
+            return v;
+        }
+
+    }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
         TextView t = (TextView) view.findViewById(R.id.textView2);
@@ -58,52 +138,7 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();//this makeText is a static method
     }
 
-    // Fetch AsyncTask
-    private class Fetch extends AsyncTask<Void, Void, Void> {
-        Elements articles;
-        ProgressDialog mProgressDialog;
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            mProgressDialog = new ProgressDialog(MainActivity.this);
-            mProgressDialog.setTitle("Android Basic JSoup Tutorial");
-            mProgressDialog.setMessage("Loading...");
-            mProgressDialog.setIndeterminate(false);
-            mProgressDialog.show();
-
-        }
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                // Connect to the web site
-                Document doc = Jsoup.connect("http://techcards.wordpress.com").get();
-                Element main =doc.getElementById("content").getElementById("primary").
-                        getElementById("main");
-
-                Log.v("main",main.text());
-
-                articles = main.getElementsByClass("entry-summary");
-                Log.v("articles",articles.text());
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        protected void onPostExecute(Void result) {
-            for (int i =0;i < articles.size() ;i++ ){
-                //links.add(i,articles.get(i).getElementsByTag("a").toString());
-                summery.add(i,articles.get(i).getElementsByTag("p").text());
-
-            }
-
-            mProgressDialog.dismiss();
-        }
-
-    }
 
 
 
@@ -126,5 +161,6 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
         return super.onOptionsItemSelected(item);
     }
 
+     
 
 }

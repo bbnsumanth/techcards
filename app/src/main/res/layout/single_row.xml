@@ -6,41 +6,45 @@
 
     <ImageView
         android:id="@+id/imageView1"
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:src="@drawable/ic_launcher"
-        android:background="#ff433b3c" />
+        android:src="@drawable/img1"
+        android:background="#ff190a2b"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/textView1" />
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height= "@dimen/abc_text_size_display_4_material"
         android:text="New Text"
         android:id="@+id/textView1"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/imageView1"
-        android:layout_alignBottom="@+id/imageView1"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:background="#ff433b3c"
+        android:background="#ff190a2b"
         android:textColor="#ffffffff"
-        android:textStyle="italic"
+        android:textStyle="bold|normal"
         android:textIsSelectable="false"
-        android:textAlignment="gravity" />
+        android:textAlignment="gravity"
+        android:gravity="center_vertical|center_horizontal" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/textView2"
-        android:layout_below="@+id/imageView1"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
 
         android:autoText="false"
-        android:background="#ff5aff2d" />
+        android:background="#ffffcc2a"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/textView1"
+        android:layout_alignEnd="@+id/textView1"
+        android:layout_below="@+id/imageView1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:gravity="center_vertical|center_horizontal"
+        android:textStyle="bold|italic" />
 
 </RelativeLayout>
