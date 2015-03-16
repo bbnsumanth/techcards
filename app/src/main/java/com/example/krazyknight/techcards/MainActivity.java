@@ -1,6 +1,8 @@
 package com.example.krazyknight.techcards;
 
         import android.content.Context;
+        import android.content.Intent;
+        import android.net.Uri;
         import android.os.AsyncTask;
         import android.support.v7.app.ActionBarActivity;
         import android.os.Bundle;
@@ -13,7 +15,7 @@ package com.example.krazyknight.techcards;
         import android.widget.AdapterView;
         import android.widget.AdapterView.OnItemClickListener;
         import android.widget.ArrayAdapter;
-        import android.widget.ImageView;
+        import android.widget.Button;
         import android.widget.ListView;
         import android.widget.TextView;
         import android.widget.Toast;
@@ -25,15 +27,18 @@ package com.example.krazyknight.techcards;
         import java.io.IOException;
         import java.util.ArrayList;
 
+        import static android.widget.Toast.*;
+        import static android.widget.Toast.makeText;
+
 
 public class MainActivity extends ActionBarActivity implements OnItemClickListener {
     ListView listView1;
-    int[] images = {R.drawable.img1,R.drawable.img2,R.drawable.img3,R.drawable.img4,R.drawable.img5,R.drawable.img6, R.drawable.img7,R.drawable.img8};
     MyAdapter adapter ;
 
     ArrayList<String> summery = new ArrayList<String>(4);
     ArrayList<String> links = new ArrayList<String>(4);
-    Elements art;
+    ArrayList<String> titles = new ArrayList<String>(4);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,32 +54,35 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
 
 
     // Fetch AsyncTask
-    private class Fetch extends AsyncTask<String, Void, Elements> {
+    private class Fetch extends AsyncTask<String, Void, Element> {
 
         @Override
-        protected Elements doInBackground(String... params) {
-            Elements articles = null;
+        protected Element doInBackground(String... params) {
+            Element mainContent = null;
 
+            //TODO: before downloading ,check for network connection ,if not available respond pleasantly .
             try {
                 // Connect to the web site
                 Document doc = Jsoup.connect(params[0]).get();
-                Element main =doc.getElementById("content").getElementById("primary").
+                mainContent =doc.getElementById("content").getElementById("primary").
                         getElementById("main");
-                articles = main.getElementsByClass("entry-summary");
 
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("IO exception");
             }
 
-            return articles;
+            return mainContent;
         }
 
 
 
-        protected void onPostExecute(Elements result) {
+        protected void onPostExecute(Element result) {
 
-            art = result;
+            Elements art = result.getElementsByClass("entry-summary");
+            Elements title = result.getElementsByClass("entry-title");
+
+
+
 
             try{
                 for (int i =0;i<art.size() ;i++ ) {
@@ -83,6 +91,9 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
                     links.add(i,art.get(i).getElementsByTag("a").toString());
                     Log.v("links",art.toString());
                     summery.add(i,art.get(i).getElementsByTag("p").text());
+                    titles.add(i,title.get(i).text());
+
+
 
                 }
 
@@ -92,7 +103,7 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
             }
 
 
-            adapter = new MyAdapter(MainActivity.this,links,summery,images);
+            adapter = new MyAdapter(MainActivity.this);
             listView1.setAdapter(adapter);
             listView1.setOnItemClickListener(MainActivity.this);
 
@@ -102,40 +113,65 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
     }
 
     public class MyAdapter extends ArrayAdapter<String>{
-
-        int[] images;
-        ArrayList<String>  links;
-        ArrayList<String> summery;
-
-        public MyAdapter(Context c,ArrayList<String>  links,ArrayList<String>  summery,int[]images){
+        //constructor..should call the super class constructor with one of its valid constructors
+        public MyAdapter(Context c){
             super(c,R.layout.single_row,R.id.textView1,links);
-            this.images = images;
-            this.links = links;
-            this.summery = summery;
         }
-        public View getView(int position,View convertView,ViewGroup parent){
+        //override this method to make a custom view
+        public View getView(final int position,View convertView,ViewGroup parent){
+            final int pos = position;
 
-            LayoutInflater inflater = getLayoutInflater();
-            View v = inflater.inflate(R.layout.single_row,listView1,false);
 
-            TextView t1 = (TextView) v.findViewById(R.id.textView1);
-            TextView t2 = (TextView) v.findViewById(R.id.textView2);
-            ImageView v1 = (ImageView) v.findViewById(R.id.imageView1);
-            t1.setText(links.get(position));
+            //why should we use convertView,can't we instead create our own View v,and return it at the end instead of convertView???
+            if(convertView == null)
+            {
+
+                LayoutInflater inflater = getLayoutInflater();
+                convertView = inflater.inflate(R.layout.single_row,listView1,false);
+            }
+
+
+
+
+            TextView t1 = (TextView) convertView.findViewById(R.id.textView1);
+            TextView t2 = (TextView) convertView.findViewById(R.id.textView2);
+            Button b1 = (Button) convertView.findViewById(R.id.button1);
+
+            t1.setText(titles.get(position));
             t2.setText(summery.get(position));
+            b1.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Intent i = new Intent(MainActivity.this,Read.class);
+                    i.putExtra("title",titles.get(pos));//or we can create a bundle with the key value pair and put that bundle in extra
+                    startActivity(i);
 
-            v1.setImageResource(images[position]);
+                }
+
+            });
 
 
-            return v;
+
+            return convertView;
         }
+        /*
+        private class ClickHandler implements View.OnClickListener{
+
+            @Override
+            public void onClick(View v) {
+                //new Toast().makeText(this, "hi", LENGTH_SHORT).show();
+            }
+        }
+        */
 
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
-        TextView t = (TextView) view.findViewById(R.id.textView2);
+        TextView t = (TextView) view.findViewById(R.id.textView1);
         String text =(String) t.getText();
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();//this makeText is a static method
+        Toast.makeText(this, text, LENGTH_SHORT).show();//this makeText is a static method
     }
 
 
@@ -161,6 +197,6 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
         return super.onOptionsItemSelected(item);
     }
 
-     
+
 
 }

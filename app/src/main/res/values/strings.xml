@@ -4,5 +4,7 @@
     <string name="app_name">techcards</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="buttostring">Read More</string>
+    <string name="title_activity_read">read</string>
 
 </resources>

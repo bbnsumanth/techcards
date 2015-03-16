@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="270dp"
     android:background="#ff2d2f3b"
     >
 
@@ -9,41 +9,39 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Large Text"
         android:id="@+id/textView1"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:textColor="#ffffffff"
         android:gravity="center"
-        android:textSize="20dp"
+        android:textColor="#ffffffff"
+        android:textColorHighlight="#ffff352b"
+        android:textSize="30dp"
         android:textStyle="bold|italic"
         android:paddingBottom="5dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text="New Text"
         android:id="@+id/textView2"
-        android:layout_below="@+id/textView1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:textColor="#ffffffff" />
+        android:layout_above="@+id/button"
+        android:textColorHint="#fffff06a"
+        android:layout_below="@+id/textView1" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="read more"
-        android:id="@+id/button1"
-        android:layout_below="@+id/textView2"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:text="@string/buttostring"
+        android:id="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        style="@android:style/DeviceDefault.Light.ButtonBar" />
 </RelativeLayout>
