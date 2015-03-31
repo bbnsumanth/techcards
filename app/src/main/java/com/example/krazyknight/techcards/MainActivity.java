@@ -1,39 +1,33 @@
 package com.example.krazyknight.techcards;
 
-        import android.content.Context;
-        import android.content.Intent;
-        import android.net.Uri;
-        import android.os.AsyncTask;
-        import android.support.v7.app.ActionBarActivity;
-        import android.os.Bundle;
-        import android.util.Log;
-        import android.view.LayoutInflater;
-        import android.view.Menu;
-        import android.view.MenuItem;
-        import android.view.View;
-        import android.view.ViewGroup;
-        import android.widget.AdapterView;
-        import android.widget.AdapterView.OnItemClickListener;
-        import android.widget.ArrayAdapter;
-        import android.widget.Button;
-        import android.widget.ListView;
-        import android.widget.TextView;
-        import android.widget.Toast;
-        import org.jsoup.Jsoup;
-        import org.jsoup.nodes.Document;
-        import org.jsoup.nodes.*;
-        import org.jsoup.select.Elements;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
-        import java.io.IOException;
-        import java.util.ArrayList;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-        import static android.widget.Toast.*;
-        import static android.widget.Toast.makeText;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity implements OnItemClickListener {
-    ListView listView1;
-    MyAdapter adapter ;
+public class MainActivity extends ActionBarActivity  {
+    RecyclerView recyclerView;
 
     ArrayList<String> summery = new ArrayList<String>(4);
     ArrayList<String> links = new ArrayList<String>(4);
@@ -45,7 +39,7 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listView1 = (ListView) findViewById(R.id.listView1);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
         String stringUrl = "https://techcards.wordpress.com";
         Fetch fetch = new Fetch();
@@ -102,79 +96,94 @@ public class MainActivity extends ActionBarActivity implements OnItemClickListen
                 System.out.println("art is null");
             }
 
-
-            adapter = new MyAdapter(MainActivity.this);
-            listView1.setAdapter(adapter);
-            listView1.setOnItemClickListener(MainActivity.this);
-
+            List dataList = createViewDataList(titles,summery,links);
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setAdapter(new MyAdapter(dataList));
+            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
 
         }
 
     }
 
-    public class MyAdapter extends ArrayAdapter<String>{
-        //constructor..should call the super class constructor with one of its valid constructors
-        public MyAdapter(Context c){
-            super(c,R.layout.single_row,R.id.textView1,links);
+
+
+    public List createViewDataList(ArrayList<String> titles,ArrayList<String> summery,ArrayList<String> links){
+        List result = new ArrayList();
+
+        for (int i=0; i < titles.size(); i++) {
+            ViewData data = new ViewData(titles.get(i),summery.get(i),links.get(i));
+            result.add(data);
         }
-        //override this method to make a custom view
-        public View getView(final int position,View convertView,ViewGroup parent){
-            final int pos = position;
 
-
-            //why should we use convertView,can't we instead create our own View v,and return it at the end instead of convertView???
-            if(convertView == null)
-            {
-
-                LayoutInflater inflater = getLayoutInflater();
-                convertView = inflater.inflate(R.layout.single_row,listView1,false);
-            }
+        return result;
 
 
 
 
-            TextView t1 = (TextView) convertView.findViewById(R.id.textView1);
-            TextView t2 = (TextView) convertView.findViewById(R.id.textView2);
-            Button b1 = (Button) convertView.findViewById(R.id.button1);
+    }
 
-            t1.setText(titles.get(position));
-            t2.setText(summery.get(position));
-            b1.setOnClickListener(new View.OnClickListener()
-            {
+    public class ViewData{
+        String title;
+        String summery;
+        String link;
+
+        public ViewData(String title,String summery,String link){
+            this.link=link;
+            this.summery=summery;
+            this.title=title;
+
+        }
+
+    }
+
+    public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+
+        private List<ViewData> items;
+
+
+        public MyAdapter(List<ViewData> items) {
+            this.items = items;
+
+        }
+
+        @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_row, parent, false);
+            return new ViewHolder(v);
+        }
+
+        @Override public void onBindViewHolder(ViewHolder holder, int position) {
+            final ViewData item = items.get(position);
+            holder.title.setText(item.title);
+            holder.summery.setText(item.summery);
+            holder.readMore.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v)
-                {
+                public void onClick(View v) {
                     Intent i = new Intent(MainActivity.this,Read.class);
-                    i.putExtra("title",titles.get(pos));//or we can create a bundle with the key value pair and put that bundle in extra
+                    i.putExtra("title",item.title);
                     startActivity(i);
-
                 }
-
             });
-
-
-
-            return convertView;
         }
-        /*
-        private class ClickHandler implements View.OnClickListener{
 
-            @Override
-            public void onClick(View v) {
-                //new Toast().makeText(this, "hi", LENGTH_SHORT).show();
+        @Override public int getItemCount() {
+            return items.size();
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public TextView title;
+            public TextView summery;
+            public Button readMore;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                title = (TextView) itemView.findViewById(R.id.textView1);
+                summery = (TextView) itemView.findViewById(R.id.textView2);
+                readMore = (Button) itemView.findViewById(R.id.button1);
+
             }
         }
-        */
-
     }
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
-        TextView t = (TextView) view.findViewById(R.id.textView1);
-        String text =(String) t.getText();
-        Toast.makeText(this, text, LENGTH_SHORT).show();//this makeText is a static method
-    }
-
-
 
 
 
