@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,6 +30,7 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity  {
     RecyclerView recyclerView;
+    Toolbar toolbar;
 
     ArrayList<String> summery = new ArrayList<String>(4);
     ArrayList<String> links = new ArrayList<String>(4);
@@ -38,6 +41,8 @@ public class MainActivity extends ActionBarActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        toolbar = (Toolbar) findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
@@ -202,6 +207,9 @@ public class MainActivity extends ActionBarActivity  {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
+        }
+        if(id == R.id.refresh){
+            Toast.makeText(this,"You are up to date",Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }
